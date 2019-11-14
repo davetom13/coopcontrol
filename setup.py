@@ -1,16 +1,12 @@
-# Creates the coopcontrol package so it can be used in bin scripts and webservices.
-#
-
-from setuptools import setup
+from distutils.core import setup
 
 setup(
     name='coopcontrol',
-    version='1.0.1',
-    description='Automated chicken coop with a raspberry pi and 5V relays',
+    version='2.0.0',
+    description='Chicken Coop Control Automation and API',
     url='http://github.com/isometimescode/coopcontrol',
     author='Toni Wells',
     author_email='isometimescode@users.noreply.github.com',
     license='GNU GPLv2+',
-    packages=['coopcontrol'],
-    zip_safe=False
+    packages=[]
 )
