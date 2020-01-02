@@ -8,5 +8,5 @@ setup(
     author='Toni Wells',
     author_email='isometimescode@users.noreply.github.com',
     license='GNU GPLv2+',
-    packages=[]
+    packages=['flask']
 )
