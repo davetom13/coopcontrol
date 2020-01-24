@@ -1,0 +1,5 @@
+# Example file, please make a copy called `.env`
+# and install with your own configuration as needed
+
+FLASK_ENV=production
+COOPCONTROL_ENV=production

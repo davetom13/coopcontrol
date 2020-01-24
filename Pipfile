@@ -5,9 +5,12 @@ verify_ssl = true
 
 [dev-packages]
 sphinx = "*"
+sphinx-autodoc-typehints = "*"
 
 [packages]
 flask = ">=1.1.1"
+pyyaml = "*"
+python-dateutil = "*"
 
 [requires]
 python_version = "3.7"

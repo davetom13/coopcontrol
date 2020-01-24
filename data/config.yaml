@@ -1,0 +1,88 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# Copyright (c) 2015-2020 Toni Wells
+#
+# Default configuration information for this package.
+
+production:
+  app: &app
+    name: "CoopControl"
+    latitude: 47.690416
+    longitude:  -122.315576
+    timezone: "America/Los_Angeles"
+    daylight_hours: 13
+
+  logging: &logging
+    # These items are passed to logging.config.dictConfig()
+    version: 1
+    disable_existing_loggers: False
+    root:
+      level: "WARNING"
+      handlers:
+        - "info_rotating_file_handler"
+        - "error_file_handler"
+    handlers:
+      info_rotating_file_handler:
+        level: "INFO"
+        formatter: "advanced"
+        class: "logging.handlers.RotatingFileHandler"
+        filename: "info.log"
+        mode: "a"
+        maxBytes: 10240
+        backupCount: 5
+      error_file_handler:
+        level: "WARNING"
+        formatter: "advanced"
+        class: "logging.FileHandler"
+        filename: "error.log"
+        mode: "a"
+    formatters:
+      simple:
+        format: "%(asctime)s %(levelname)s %(module)s.%(funcName)s %(message)s"
+        datefmt: "%H:%M:%S"
+      advanced:
+        format: "%(asctime)s-%(levelname)s %(module)s.%(funcName)s:%(lineno)s %(message)s"
+        datefmt: "%Y-%m-%d %H:%M:%S"
+
+  database: &database
+    uri: "data/coopcontrol.db"
+
+development:
+  app:
+    <<: *app
+    name: "CoopControl-Dev"
+
+  logging:
+    <<: *logging
+    root:
+      level: "DEBUG"
+      handlers: ["debug_console_handler"]
+    handlers:
+      debug_console_handler:
+        level: "DEBUG"
+        formatter: "simple"
+        class: "logging.StreamHandler"
+        stream: "ext://sys.stdout"
+
+  database:
+    uri: "data/coopcontrol-dev.db"
+
+test:
+  app:
+    <<: *app
+    name: "CoopControl-Test"
+
+  logging:
+    <<: *logging
+    root:
+      level: "INFO"
+      handlers: ["test_file_handler"]
+    handlers:
+      test_file_handler:
+        level: "DEBUG"
+        formatter: "simple"
+        class: "logging.FileHandler"
+        filename: "test.log"
+        mode: "w"
+
+  database:
+    uri: "data/coopcontrol-test.db"
