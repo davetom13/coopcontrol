@@ -38,6 +38,9 @@ class TestAstronomical(unittest.TestCase):
     def setUp(self):
         self.astro = Astronomical()
 
+    def tearDown(self):
+        self.astro = None
+
     def get_resp_mock(self, code, ret):
         respmock = MagicMock()
         respmock.getcode.return_value = code
@@ -48,9 +51,9 @@ class TestAstronomical(unittest.TestCase):
     @patch('coopcontrol.astronomical.urlopen')
     def test_api_success(self, mock_urlopen):
         mock_urlopen.return_value = self.get_resp_mock(200, self.JSON_SUCCESS)
-        response = self.astro.get_api_data()
-        self.assertIn("sunrise", response)
-        self.assertIn("sunset", response)
+        response = self.astro.get_api_data("today", False)
+        self.assertIn("sunrise_local_time", response)
+        self.assertIn("sunset_local_time", response)
         self.assertIn("day_length", response)
 
     @patch('coopcontrol.astronomical.urlopen')
@@ -65,6 +68,40 @@ class TestAstronomical(unittest.TestCase):
         mock_urlopen.return_value = self.get_resp_mock(400, self.JSON_FAILURE)
         response = self.astro.get_api_data()
         self.assertEqual(None, response)
+
+    @patch('coopcontrol.astronomical.urlopen')
+    def test_save_record_success(self, mock_urlopen):
+        # first load data to private vars
+        mock_urlopen.return_value = self.get_resp_mock(200, self.JSON_SUCCESS)
+        self.astro.get_api_data("today", False)
+
+        # actual test with saving to db
+        id = self.astro.save_record()
+        self.assertIs(type(id), int)
+        self.assertGreaterEqual(id, 1)
+
+    def test_save_record_missing_data(self):
+        # fails because data isn't loaded in vars
+        with self.assertRaises(ValueError):
+            self.astro.save_record()
+
+    def test_get_record_success(self):
+        # first make sure there is a record in the test db
+        self.test_save_record_success()
+
+        for date in {"2015-05-21", "May 21, 2015", "2015-05-21T05:05:35+00:00"}:
+            with self.subTest(date=date):
+                record = self.astro.get_record(date)
+                self.assertIn("id", record)
+                self.assertEqual("2015-05-21", record.get("date"))
+
+    def test_get_record_not_found(self):
+        record = self.astro.get_record("1970-01-01")
+        self.assertIsNone(record)
+
+    def test_get_record_bad_date(self):
+        with self.assertRaises(ValueError):
+            self.astro.get_record("foo")
 
 if __name__ == "__main__":
     unittest.main()

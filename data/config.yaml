@@ -44,7 +44,7 @@ production:
         datefmt: "%Y-%m-%d %H:%M:%S"
 
   database: &database
-    uri: "data/coopcontrol.db"
+    uri: "sqlite:///data/coopcontrol.db"
 
 development:
   app:
@@ -64,7 +64,7 @@ development:
         stream: "ext://sys.stdout"
 
   database:
-    uri: "data/coopcontrol-dev.db"
+    uri: "sqlite:///data/coopcontrol-dev.db"
 
 test:
   app:
@@ -85,4 +85,4 @@ test:
         mode: "w"
 
   database:
-    uri: "data/coopcontrol-test.db"
+    uri: "sqlite:///data/coopcontrol-test.db"

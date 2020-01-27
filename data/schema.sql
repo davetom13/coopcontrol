@@ -5,12 +5,8 @@
 --   but it's possible to have several running applications for testing
 --   or otherwise.
 CREATE TABLE IF NOT EXISTS app (
-    app_id TINYINT PRIMARY KEY,
+    id TINYINT PRIMARY KEY,
     name TEXT NOT NULL UNIQUE,
-    latitude DECIMAL (10, 8) NOT NULL,
-    longitude DECIMAL (10, 8) NOT NULL,
-    ideal_daylight_hours TINYINT NOT NULL,
-    timezone TEXT NOT NULL,
     status TINYINT NOT NULL,
     created INTEGER NOT NULL DEFAULT (strftime('%s', DATETIME('now'))),
     updated INTEGER NOT NULL DEFAULT (strftime('%s', DATETIME('now')))
@@ -18,10 +14,10 @@ CREATE TABLE IF NOT EXISTS app (
 
 -- EXAMPLE INSERT
 -- INSERT INTO app
---     (name, latitude, longitude, ideal_daylight_hours, timezone, status)
+--     (name, status)
 -- VALUES
---     ('main', 47.690416, -122.315576, 13, 'America/Los_Angeles', 0),
---     ('test', 47.690416, -122.315576, 13, 'America/Los_Angeles', 1)
+--     ('main', 0),
+--     ('test', 1)
 -- ;
 ----------
 
@@ -31,22 +27,23 @@ CREATE TABLE IF NOT EXISTS app (
 --   This table contains rows for every piece of hardware the application(s)
 --   need to keep track of, and what pins have been assigned to it.
 CREATE TABLE IF NOT EXISTS hardware (
-    hardware_id TINYINT PRIMARY KEY,
+    id TINYINT PRIMARY KEY,
     name TEXT NOT NULL UNIQUE,
     app_id TINYINT NOT NULL,
     bcm_pin_write TINYINT NOT NULL,
     bcm_pin_read TINYINT NOT NULL,
     status TINYINT NOT NULL,
+    active TINYINT NOT NULL DEFAULT 0,
     created INTEGER NOT NULL DEFAULT (strftime('%s', DATETIME('now'))),
     updated INTEGER NOT NULL DEFAULT (strftime('%s', DATETIME('now')))
 );
 
 -- EXAMPLE INSERT
 -- INSERT INTO hardware
---     (name, app_id, bcm_pin_read, bcm_pin_write, status)
+--     (name, app_id, bcm_pin_read, bcm_pin_write, status, active)
 -- VALUES
---     ('door', 1, 22, 23, 0),
---     ('light', 1, 17, 17, 0)
+--     ('door', 1, 22, 23, 0, 0),
+--     ('light', 1, 17, 17, 0, 0)
 -- ;
 ----------
 
@@ -56,18 +53,19 @@ CREATE TABLE IF NOT EXISTS hardware (
 --   This table holds a row for every day that sunrise/sunset data has been
 --   calculated for.
 CREATE TABLE IF NOT EXISTS astronomical (
-    astronomical_id TINYINT PRIMARY KEY,
+    id TINYINT PRIMARY KEY,
+    date TEXT NOT NULL UNIQUE,
     sunrise INTEGER NOT NULL,
     sunset INTEGER NOT NULL,
-    daylight_hours DECIMAL(2,3) NOT NULL,
+    day_length DECIMAL(2,3) NOT NULL,
     created INTEGER NOT NULL DEFAULT (strftime('%s', DATETIME('now')))
 );
 
 -- EXAMPLE INSERT
 -- INSERT INTO astronomical
---     (sunrise, sunset, daylight_hours)
+--     (date, sunrise, sunset, day_length)
 -- VALUES
---     (strftime('%s', '2016-02-26 06:54:43'),
+--     ("2016-02-26", strftime('%s', '2016-02-26 06:54:43'),
 --         strftime('%s', '2016-02-26 17:49:26'), 10.911)
 -- ;
 ----------
@@ -81,7 +79,7 @@ AFTER UPDATE ON app
 BEGIN
     UPDATE app
     SET updated = strftime('%s', DATETIME('now'))
-    WHERE app_id = old.app_id;
+    WHERE id = old.id;
 END;
 ----------
 
@@ -94,6 +92,6 @@ AFTER UPDATE ON hardware
 BEGIN
     UPDATE hardware
     SET updated = strftime('%s', DATETIME('now'))
-    WHERE hardware_id = old.hardware_id;
+    WHERE id = old.id;
 END;
 ----------
