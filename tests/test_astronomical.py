@@ -49,25 +49,35 @@ class TestAstronomical(unittest.TestCase):
         return respmock
 
     @patch('coopcontrol.astronomical.urlopen')
-    def test_api_success(self, mock_urlopen):
+    def test_api_success_withdb(self, mock_urlopen):
+        mock_urlopen.return_value = self.get_resp_mock(200, self.JSON_SUCCESS)
+        response = self.astro.get_api_data("today", True)
+        self.assertIn("sunrise_local_time", response)
+        self.assertIn("sunset_local_time", response)
+        self.assertIn("day_length", response)
+        self.assertGreaterEqual(response.get("db_id"), 1)
+
+    @patch('coopcontrol.astronomical.urlopen')
+    def test_api_success_withoutdb(self, mock_urlopen):
         mock_urlopen.return_value = self.get_resp_mock(200, self.JSON_SUCCESS)
         response = self.astro.get_api_data("today", False)
         self.assertIn("sunrise_local_time", response)
         self.assertIn("sunset_local_time", response)
         self.assertIn("day_length", response)
+        self.assertIsNone(response["db_id"])
 
     @patch('coopcontrol.astronomical.urlopen')
     def test_api_fail_http_status(self, mock_urlopen):
         mock_urlopen.return_value = self.get_resp_mock(400, self.JSON_FAILURE)
         mock_urlopen.side_effect = HTTPError(*[None] * 5)
         response = self.astro.get_api_data()
-        self.assertEqual(None, response)
+        self.assertIsNone(response)
 
     @patch('coopcontrol.astronomical.urlopen')
     def test_api_fail_malformed_response(self, mock_urlopen):
         mock_urlopen.return_value = self.get_resp_mock(400, self.JSON_FAILURE)
         response = self.astro.get_api_data()
-        self.assertEqual(None, response)
+        self.assertIsNone(response)
 
     @patch('coopcontrol.astronomical.urlopen')
     def test_save_record_success(self, mock_urlopen):

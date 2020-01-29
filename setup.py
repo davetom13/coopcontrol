@@ -7,6 +7,7 @@ setup(
     url='http://github.com/isometimescode/coopcontrol',
     author='Toni Wells',
     author_email='isometimescode@users.noreply.github.com',
-    license='GNU GPLv2+',
-    packages=['flask']
+    license='GNU General Public License v3 or later (GPLv3+)',
+    packages=['coopcontrol'],
+    install_requires=['flask', 'pyyaml', 'python-dateutil', 'dataset']
 )

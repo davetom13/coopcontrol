@@ -22,8 +22,8 @@ from urllib.request import urlopen
 from urllib.parse import urlencode
 from urllib.error import HTTPError
 
-from coopcontrol.configuration import config
-from coopcontrol.exception import APIError
+from .configuration import config
+from .exception import APIError
 
 class Astronomical:
     """Interact with the sunrise/sunset astronomical data"""
@@ -42,7 +42,7 @@ class Astronomical:
     The dictionary of data formatted for easy display::
 
         {
-            'day_length': 14.29,
+            'day_length': 14,
             'date_utc': '2015-05-21',
             'sunrise_utc_ts': 1432184735,
             'sunset_utc_ts': 1432236179,
@@ -67,11 +67,18 @@ class Astronomical:
             save: true or false, save data to the database; default true
 
         Returns:
-            A dictionary of astronomical data::
+            A dictionary of astronomical data. `db_id` will be None if
+            save=False. Example::
 
                 {
-                    "day_length'": 12.1
-                    ...
+                    'day_length': 14,
+                    'date_utc': '2015-05-21',
+                    'sunrise_utc_ts': 1432184735,
+                    'sunset_utc_ts': 1432236179,
+                    'date_local': '2015-05-20',
+                    'sunrise_local_time': '22:05:35-0700',
+                    'sunset_local_time': '12:22:59-0700'
+                    'db_id': 15,
                 }
 
         """
@@ -82,9 +89,9 @@ class Astronomical:
 
             self.__format_api_data()
 
-            if (save):
-                self.save_record()
-            return self.__formatted_data
+            data = self.__formatted_data
+            data["db_id"] = self.save_record() if save else None
+            return data
         except HTTPError as e:
             self.logger.error(f"API error: {e.reason}")
             return None
@@ -113,7 +120,7 @@ class Astronomical:
             "day_length": self.__formatted_data["day_length"],
         }
 
-        self.logger.debug(f"New data: {db_data}")
+        self.logger.debug(f"db_data: {db_data}")
 
         db = dataset.connect(config.database["uri"])
         table = db["astronomical"]
@@ -140,7 +147,7 @@ class Astronomical:
 
             {
                 'id': 1,
-                'day_length': 14.29,
+                'day_length': 14,
                 'date': '2015-05-21',
                 'sunrise': 1432184735,
                 'sunset': 1432236179,
@@ -280,7 +287,7 @@ class Astronomical:
 
         self.__formatted_data = {
             # day is stored in seconds and exact precision is not necessary
-            "day_length": round(self.__raw_data["day_length"] / 60 / 60, 2),
+            "day_length": int(self.__raw_data["day_length"] / 60 / 60),
 
             "date_utc": utc_sr.strftime("%Y-%m-%d"),
             "sunrise_utc_ts": utc_sr.timestamp(),

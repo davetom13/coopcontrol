@@ -5,7 +5,7 @@
 --   but it's possible to have several running applications for testing
 --   or otherwise.
 CREATE TABLE IF NOT EXISTS app (
-    id TINYINT PRIMARY KEY,
+    id INTEGER PRIMARY KEY,
     name TEXT NOT NULL UNIQUE,
     status TINYINT NOT NULL,
     created INTEGER NOT NULL DEFAULT (strftime('%s', DATETIME('now'))),
@@ -27,7 +27,7 @@ CREATE TABLE IF NOT EXISTS app (
 --   This table contains rows for every piece of hardware the application(s)
 --   need to keep track of, and what pins have been assigned to it.
 CREATE TABLE IF NOT EXISTS hardware (
-    id TINYINT PRIMARY KEY,
+    id INTEGER PRIMARY KEY,
     name TEXT NOT NULL UNIQUE,
     app_id TINYINT NOT NULL,
     bcm_pin_write TINYINT NOT NULL,
@@ -53,11 +53,11 @@ CREATE TABLE IF NOT EXISTS hardware (
 --   This table holds a row for every day that sunrise/sunset data has been
 --   calculated for.
 CREATE TABLE IF NOT EXISTS astronomical (
-    id TINYINT PRIMARY KEY,
+    id INTEGER PRIMARY KEY,
     date TEXT NOT NULL UNIQUE,
     sunrise INTEGER NOT NULL,
     sunset INTEGER NOT NULL,
-    day_length DECIMAL(2,3) NOT NULL,
+    day_length TINYINT NOT NULL,
     created INTEGER NOT NULL DEFAULT (strftime('%s', DATETIME('now')))
 );
 
