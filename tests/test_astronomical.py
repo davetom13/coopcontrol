@@ -5,13 +5,13 @@
 Unit tests for getting/setting astronomical data
 """
 
-import unittest
-from unittest.mock import patch, MagicMock
+import pytest
+from unittest.mock import MagicMock
 from urllib.error import HTTPError
 
-from coopcontrol.astronomical import Astronomical
+import coopcontrol.models.astronomical
 
-class TestAstronomical(unittest.TestCase):
+class TestAstroApiHelper():
     # Expected result for a good API request
     JSON_SUCCESS = '''
         {
@@ -35,83 +35,66 @@ class TestAstronomical(unittest.TestCase):
     # Exepected result when bad params are set to the API
     JSON_FAILURE = '''{"results":"","status":"INVALID_REQUEST"}'''
 
-    def setUp(self):
-        self.astro = Astronomical()
-
-    def tearDown(self):
-        self.astro = None
-
-    def get_resp_mock(self, code, ret):
+    def __get_resp_mock(self, code, ret):
+        """Get a mock object with response and code."""
         respmock = MagicMock()
         respmock.getcode.return_value = code
         respmock.read.return_value = ret
         respmock.__enter__.return_value = respmock
+        respmock.return_value = respmock
         return respmock
 
-    @patch('coopcontrol.astronomical.urlopen')
-    def test_api_success_withdb(self, mock_urlopen):
-        mock_urlopen.return_value = self.get_resp_mock(200, self.JSON_SUCCESS)
-        response = self.astro.get_api_data("today", True)
-        self.assertIn("sunrise_local_time", response)
-        self.assertIn("sunset_local_time", response)
-        self.assertIn("day_length", response)
-        self.assertGreaterEqual(response.get("db_id"), 1)
+    @pytest.fixture()
+    def astro(self, client):
+        return coopcontrol.models.astronomical.AstroApiHelper()
 
-    @patch('coopcontrol.astronomical.urlopen')
-    def test_api_success_withoutdb(self, mock_urlopen):
-        mock_urlopen.return_value = self.get_resp_mock(200, self.JSON_SUCCESS)
-        response = self.astro.get_api_data("today", False)
-        self.assertIn("sunrise_local_time", response)
-        self.assertIn("sunset_local_time", response)
-        self.assertIn("day_length", response)
-        self.assertIsNone(response["db_id"])
+    @pytest.fixture()
+    def mock_urlopen_success(self, monkeypatch):
+        respmock = self.__get_resp_mock(200, self.JSON_SUCCESS)
+        monkeypatch.setattr(coopcontrol.models.astronomical, "urlopen", respmock)
+        return respmock
 
-    @patch('coopcontrol.astronomical.urlopen')
-    def test_api_fail_http_status(self, mock_urlopen):
-        mock_urlopen.return_value = self.get_resp_mock(400, self.JSON_FAILURE)
-        mock_urlopen.side_effect = HTTPError(*[None] * 5)
-        response = self.astro.get_api_data()
-        self.assertIsNone(response)
+    @pytest.fixture()
+    def mock_urlopen_fail(self, monkeypatch):
+        respmock = self.__get_resp_mock(400, self.JSON_FAILURE)
+        monkeypatch.setattr(coopcontrol.models.astronomical, "urlopen", respmock)
+        return respmock
 
-    @patch('coopcontrol.astronomical.urlopen')
-    def test_api_fail_malformed_response(self, mock_urlopen):
-        mock_urlopen.return_value = self.get_resp_mock(400, self.JSON_FAILURE)
-        response = self.astro.get_api_data()
-        self.assertIsNone(response)
+    def test_api_success(self, astro, mock_urlopen_success):
+        """Normal request with no problems."""
+        result_id = astro.add_api_data()
+        assert result_id >= 1
 
-    @patch('coopcontrol.astronomical.urlopen')
-    def test_save_record_success(self, mock_urlopen):
-        # first load data to private vars
-        mock_urlopen.return_value = self.get_resp_mock(200, self.JSON_SUCCESS)
-        self.astro.get_api_data("today", False)
+    def test_api_success_with_duplicate(self, astro, mock_urlopen_success):
+        """No errors when inserting duplicate dates."""
+        first_result_id = astro.add_api_data()
+        assert first_result_id >= 1
 
-        # actual test with saving to db
-        id = self.astro.save_record()
-        self.assertIs(type(id), int)
-        self.assertGreaterEqual(id, 1)
+        next_result_id = astro.add_api_data()
+        assert next_result_id == first_result_id
 
-    def test_save_record_missing_data(self):
-        # fails because data isn't loaded in vars
-        with self.assertRaises(ValueError):
-            self.astro.save_record()
+    def test_api_fail_http_status(self, astro, mock_urlopen_fail):
+        """Raises an exception in the request."""
+        mock_urlopen_fail.side_effect = HTTPError(
+            None, None, "Mocked Side Effect", None, None)
+        response = astro.add_api_data()
+        assert response == None
 
-    def test_get_record_success(self):
-        # first make sure there is a record in the test db
-        self.test_save_record_success()
+    def test_api_fail_malformed_response(self, astro, mock_urlopen_fail):
+        """No exception but return bad JSON."""
+        response = astro.add_api_data()
+        assert response == None
 
-        for date in {"2015-05-21", "May 21, 2015", "2015-05-21T05:05:35+00:00"}:
-            with self.subTest(date=date):
-                record = self.astro.get_record(date)
-                self.assertIn("id", record)
-                self.assertEqual("2015-05-21", record.get("date"))
+    def test_get_record_success(self, client):
+        """Get a basic astronomical record from the db."""
+        rv = client.get("/astronomical/2015-05-21")
+        data = rv.get_json()
+        assert data.get("status") == "OK"
+        assert data["result"]["date"] == "2015-05-21"
 
-    def test_get_record_not_found(self):
-        record = self.astro.get_record("1970-01-01")
-        self.assertIsNone(record)
-
-    def test_get_record_bad_date(self):
-        with self.assertRaises(ValueError):
-            self.astro.get_record("foo")
-
-if __name__ == "__main__":
-    unittest.main()
+    def test_get_record_notfound(self, client):
+        """Get a record that does not exist."""
+        rv = client.get("/astronomical/1970-01-01")
+        data = rv.get_json()
+        assert data.get("status") == "NOT_FOUND"
+        assert data["result"] == dict()

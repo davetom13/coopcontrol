@@ -58,7 +58,8 @@ CREATE TABLE IF NOT EXISTS astronomical (
     sunrise INTEGER NOT NULL,
     sunset INTEGER NOT NULL,
     day_length TINYINT NOT NULL,
-    created INTEGER NOT NULL DEFAULT (strftime('%s', DATETIME('now')))
+    created INTEGER NOT NULL DEFAULT (strftime('%s', DATETIME('now'))),
+    updated INTEGER NOT NULL DEFAULT (strftime('%s', DATETIME('now')))
 );
 
 -- EXAMPLE INSERT

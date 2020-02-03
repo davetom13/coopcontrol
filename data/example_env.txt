@@ -1,5 +1,10 @@
 # Example file, please make a copy called `.env`
 # and install with your own configuration as needed
 
+# useful for using `pipenv`
+FLASK_SKIP_DOTENV=1
+
+FLASK_APP=coopcontrol
+
 FLASK_ENV=production
 COOPCONTROL_ENV=production

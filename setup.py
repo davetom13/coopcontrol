@@ -9,5 +9,6 @@ setup(
     author_email='isometimescode@users.noreply.github.com',
     license='GNU General Public License v3 or later (GPLv3+)',
     packages=['coopcontrol'],
-    install_requires=['flask', 'pyyaml', 'python-dateutil', 'dataset']
+    install_requires=[
+        'flask','flask-sqlalchemy', 'pyyaml', 'python-dateutil']
 )

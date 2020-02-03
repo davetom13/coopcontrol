@@ -15,8 +15,6 @@ import logging.config
 
 import yaml
 
-from coopcontrol.exception import ConfigKeyError
-
 class _Config:
     ENV = ""
     """Uses the COOPCONTROL_ENV environment variable"""
@@ -29,7 +27,7 @@ class _Config:
 
         environment = getenv("COOPCONTROL_ENV")
         if environment not in self.config:
-            raise ConfigKeyError("ENV", f"{environment} not found")
+            raise ValueError(f"ENV {environment} not found or incorrect")
 
         # set ourselves to "development" or "production"
         self.ENV = environment

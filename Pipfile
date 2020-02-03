@@ -6,12 +6,13 @@ verify_ssl = true
 [dev-packages]
 sphinx = "*"
 sphinx-autodoc-typehints = "*"
+pytest = "*"
 
 [packages]
 flask = ">=1.1.1"
 pyyaml = "*"
 python-dateutil = "*"
-dataset = "*"
+flask-sqlalchemy = "*"
 
 [requires]
 python_version = "3.7"
