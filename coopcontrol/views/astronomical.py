@@ -9,6 +9,7 @@ Author: Toni Wells <isometimescode@users.noreply.github.com>
 
 import click
 from flask import Blueprint
+from dateutil import parser
 
 from ..models.astronomical import Astronomical, AstroApiHelper
 
@@ -17,10 +18,15 @@ bp = Blueprint("astronomical", __name__, url_prefix="/astronomical")
 @bp.route("/<date>")
 def get_date(date: str):
     """Get one day's worth of astronomical data from the database."""
+    try:
+        check_date = parser.parse(date)
+    except ValueError as e:
+        return {"result": {}, "status": "ERROR", "message": "Invalid date"}
+
     astro = Astronomical()
-    result = astro.query.filter_by(date=date).first()
+    result = astro.query.filter_by(date=check_date.date()).first()
     if result:
-        return {"result": result, "status": "OK"}
+        return {"result": result.get_with_local(), "status": "OK"}
     return {"result": {}, "status": "NOT_FOUND"}, 404
 
 @bp.cli.command("add-daily")

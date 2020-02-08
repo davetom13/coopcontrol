@@ -13,7 +13,7 @@
 import json
 import logging
 from dataclasses import dataclass
-from datetime import datetime
+import datetime
 
 from dateutil import parser, tz
 
@@ -29,13 +29,68 @@ from ..exception import APIError
 class Astronomical(TimestampMixin, db.Model):
     """DB model for holding astronomical data."""
 
+    DATE_FORMAT: str = "%Y-%m-%d"
+    """strftime format string for a date."""
+
+    TIME_FORMAT: str = "%H:%M:%S%z"
+    """stftime format string for a time."""
+
     id: int = db.Column(db.Integer, primary_key=True)
-    date: str = db.Column(db.String, unique=True)
+    date: datetime.date = db.Column(db.Date, unique=True)
     sunrise: int = db.Column(db.Integer, nullable=False)
     sunset: int = db.Column(db.Integer, nullable=False)
     day_length: int = db.Column(db.Integer, nullable=False)
 
-    # TODO serializable with dates timezone-aware
+    def get_with_local(self):
+        """Convert all data to the config timezone.
+
+        Args:
+            None
+
+        Returns:
+            dict: all of the models data plus time zone info. Example::
+
+            {
+                "id": 1,
+                "date": "2020-02-08",
+                "date_local": "2020-02-08",
+                "day_length": 9,
+                "sunrise": "15:25:28+0000",
+                "sunrise_local": "07:25:28-0800",
+                "sunset": "01:21:23+0000",
+                "sunset_local": "17:21:23-0800"
+            }
+
+        Raises:
+            ValueError: when data is missing
+
+        """
+        if not self.date:
+            raise ValueError("No data found to convert")
+
+        newdate = parser.parse(str(self.date))
+        sr = datetime.datetime.fromtimestamp(self.sunrise, tz.UTC)
+        ss = datetime.datetime.fromtimestamp(self.sunset, tz.UTC)
+
+        result = {
+            "id": self.id,
+            "date": newdate.strftime(self.DATE_FORMAT),
+            "sunrise": sr.strftime(self.TIME_FORMAT),
+            "sunset": ss.strftime(self.TIME_FORMAT),
+            "day_length": self.day_length,
+        }
+
+        # convert to the config tz
+        localtz = tz.gettz(config.app["timezone"])
+        newdate = newdate.astimezone(localtz)
+        sr = sr.astimezone(localtz)
+        ss = ss.astimezone(localtz)
+
+        result["date_local"] = newdate.strftime(self.DATE_FORMAT)
+        result["sunrise_local"] = sr.strftime(self.TIME_FORMAT)
+        result["sunset_local"] = ss.strftime(self.TIME_FORMAT)
+
+        return result
 
 class AstroApiHelper():
     """Interact with the sunrise/sunset astronomical data"""
@@ -98,7 +153,7 @@ class AstroApiHelper():
         utc_ss = parser.parse(self.__raw_data["sunset"])
 
         db_data = {
-            "date": utc_sr.strftime("%Y-%m-%d"),
+            "date": utc_sr,
             "sunrise": utc_sr.timestamp(),
             "sunset": utc_ss.timestamp(),
 
@@ -109,7 +164,7 @@ class AstroApiHelper():
         self.logger.debug(f"db_data: {db_data}")
 
         # first check if this data exists; not race-condition safe
-        astro = Astronomical.query.filter_by(date=db_data['date']).first()
+        astro = Astronomical.query.filter_by(date=db_data['date'].date()).first()
         if astro:
             self.logger.info(
                 f"Skipping insert for existing record date_utc "
