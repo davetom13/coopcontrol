@@ -11,6 +11,7 @@ import click
 from flask import Blueprint
 from dateutil import parser
 
+from . import format_response
 from ..models.astronomical import Astronomical, AstroApiHelper
 
 bp = Blueprint("astronomical", __name__, url_prefix="/astronomical")
@@ -21,13 +22,12 @@ def get_date(date: str):
     try:
         check_date = parser.parse(date)
     except ValueError as e:
-        return {"result": {}, "status": "ERROR", "message": "Invalid date"}
+        return format_response({}, 400, "Invalid date")
 
-    astro = Astronomical()
-    result = astro.query.filter_by(date=check_date.date()).first()
+    result = Astronomical().query.filter_by(date=check_date.date()).first()
     if result:
-        return {"result": result.get_with_local(), "status": "OK"}
-    return {"result": {}, "status": "NOT_FOUND"}, 404
+        result = result.get_with_local()
+    return format_response(result)
 
 @bp.cli.command("add-daily")
 @click.option("--date", default="today",

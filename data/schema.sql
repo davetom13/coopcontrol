@@ -1,10 +1,10 @@
 ----------
--- TABLE: app
+-- TABLE: application
 -- DESCRIPTION:
 --   Primary table for application data. Usually will only hold one row
 --   but it's possible to have several running applications for testing
 --   or otherwise.
-CREATE TABLE IF NOT EXISTS app (
+CREATE TABLE IF NOT EXISTS application (
     id INTEGER PRIMARY KEY,
     name TEXT NOT NULL UNIQUE,
     status TINYINT NOT NULL,
@@ -13,7 +13,7 @@ CREATE TABLE IF NOT EXISTS app (
 );
 
 -- EXAMPLE INSERT
--- INSERT INTO app
+-- INSERT INTO application
 --     (name, status)
 -- VALUES
 --     ('main', 0),
@@ -71,28 +71,3 @@ CREATE TABLE IF NOT EXISTS astronomical (
 -- ;
 ----------
 
-----------
--- TRIGGER: updated_app
--- DESCRIPTION:
---   Updates a timestamp on the `app` table when changes occur
-CREATE TRIGGER IF NOT EXISTS updated_app
-AFTER UPDATE ON app
-BEGIN
-    UPDATE app
-    SET updated = strftime('%s', DATETIME('now'))
-    WHERE id = old.id;
-END;
-----------
-
-----------
--- TRIGGER: updated_hardware
--- DESCRIPTION:
---   Updates a timestamp on the `hardware` table when changes occur
-CREATE TRIGGER IF NOT EXISTS updated_hardware
-AFTER UPDATE ON hardware
-BEGIN
-    UPDATE hardware
-    SET updated = strftime('%s', DATETIME('now'))
-    WHERE id = old.id;
-END;
-----------

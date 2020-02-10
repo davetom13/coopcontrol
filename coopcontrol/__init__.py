@@ -35,7 +35,8 @@ def create_app():
     db.init_app(app)
 
     # import all the blueprints we need
-    from .views import astronomical
-    app.register_blueprint(astronomical.bp)
+    from .views import astronomical, application
+    app.register_blueprint(views.astronomical.bp)
+    app.register_blueprint(views.application.bp)
 
     return app
