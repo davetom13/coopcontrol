@@ -10,10 +10,13 @@ import pytest
 from coopcontrol import create_app, db as _db
 
 @pytest.fixture(scope="session")
-def client():
+def app():
     app = create_app()
     app.config["TESTING"] = True
+    return app
 
+@pytest.fixture(scope="session")
+def client(app):
     with app.test_client() as client:
         with app.app_context():
             _db.create_all()
@@ -22,8 +25,8 @@ def client():
 
 @pytest.fixture(scope="session")
 def db_session(client):
-    yield _db.session
+    return _db.session
 
 @pytest.fixture()
-def cli_runner(client):
-    return client.test_cli_runner()
+def cli_runner(app):
+    return app.test_cli_runner()

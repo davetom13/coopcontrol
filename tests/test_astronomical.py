@@ -109,6 +109,7 @@ class TestAstroApiHelper():
         """Get a basic astronomical record from the db."""
         rv = client.get("/astronomical/1970-05-21")
         data = rv.get_json()
+        assert rv.status_code == 200
         assert data.get("status") == "OK"
         assert data["result"]["date"] == "1970-05-21"
         assert data["result"]["sunrise"] == "05:05:35+0000"
@@ -117,6 +118,7 @@ class TestAstroApiHelper():
         """Get a record that does not exist."""
         rv = client.get("/astronomical/1970-01-01")
         data = rv.get_json()
+        assert rv.status_code == 404
         assert data.get("status") == "NOT_FOUND"
         assert data["result"] == dict()
 
@@ -124,6 +126,7 @@ class TestAstroApiHelper():
         """Use an invalid date for the input."""
         rv = client.get("/astronomical/foobar")
         data = rv.get_json()
+        assert rv.status_code == 400
         assert data.get("status") == "ERROR"
         assert data["result"] == dict()
         assert data["message"] == "Invalid date"
