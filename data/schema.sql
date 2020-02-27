@@ -33,17 +33,16 @@ CREATE TABLE IF NOT EXISTS hardware (
     bcm_pin_write TINYINT NOT NULL,
     bcm_pin_read TINYINT NOT NULL,
     status TINYINT NOT NULL,
-    active TINYINT NOT NULL DEFAULT 0,
     created INTEGER NOT NULL DEFAULT (strftime('%s', DATETIME('now'))),
     updated INTEGER NOT NULL DEFAULT (strftime('%s', DATETIME('now')))
 );
 
 -- EXAMPLE INSERT
 -- INSERT INTO hardware
---     (name, app_id, bcm_pin_read, bcm_pin_write, status, active)
+--     (name, app_id, bcm_pin_read, bcm_pin_write, status)
 -- VALUES
---     ('door', 1, 22, 23, 0, 0),
---     ('light', 1, 17, 17, 0, 0)
+--     ('door', 1, 22, 23, 0),
+--     ('light', 1, 17, 17, 0)
 -- ;
 ----------
 
