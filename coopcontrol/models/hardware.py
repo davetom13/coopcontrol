@@ -10,7 +10,7 @@ Author: Toni Wells <isometimescode@users.noreply.github.com>
 
 import logging
 import enum
-from dataclasses import dataclass
+from dataclasses import dataclass, asdict
 
 from . import TimestampMixin, IntEnum
 from .. import db
@@ -51,3 +51,13 @@ class Hardware(TimestampMixin, db.Model):
         IntEnum(HardwareStatus), default=HardwareStatus.DISABLED, nullable=False)
     """The current state of the piece of hardware."""
 
+    def fields(self):
+        """Get a set of all fields for this model.
+
+        Arguments:
+            None
+
+        Returns:
+            Set of fields for this model
+        """
+        return set(asdict(self).keys())

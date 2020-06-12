@@ -17,7 +17,50 @@ from .. import db
 
 bp = Blueprint("hardware", __name__, url_prefix="/hardware")
 
-# TODO add REST API endpoints
+@bp.route("/<name>", methods=["GET", "PUT", "POST"])
+def get_hardware(name: str):
+    """Get, update or create hardware by name."""
+    result = Hardware().query.filter(Hardware.name.ilike(name)).first()
+    if request.method == "GET":
+        return format_response(result)
+
+    if not result and request.form.get("create") != "true":
+        return format_response(
+            None, 400, f"{name} not found use create: True to add it.")
+
+    if result:
+        model = result
+        created = False
+        current_app.logger.info(f"Updating existing model {model}")
+    else:
+        model = Hardware(name=name)
+        created = True
+        current_app.logger.info(f"Creating new model {model}")
+
+    try:
+        for item_name in model.fields():
+            item_value = request.form.get(item_name)
+            if item_name == "status":
+                model.status = HardwareStatus[item_value]
+            elif item_value:
+                setattr(model, item_name, item_value)
+        db.session.add(model)
+        db.session.commit()
+    except (KeyError, exc.IntegrityError) as e:
+        # if the some value provided is invalid
+        db.session.rollback()
+        return format_response(None, 400, f"Invalid value provided: {e}")
+    except exc.SQLAlchemyError as e:
+        # some unknown SQLAlchemy error
+        current_app.logger.warning(f"Error when updating {name}: {e}")
+        db.session.rollback()
+        return format_response(None, 500, "Unknown error occurred")
+
+    if created:
+        return format_response(model, 201)
+    else:
+        return format_response(None, 204)
+
 
 @bp.cli.command("get-hardware-status")
 @click.option("--name", required=True, help="A name to check.")
@@ -28,6 +71,7 @@ def get_hardware_status(name: str):
         click.echo(
             Hardware.query.filter(Hardware.name.ilike(name)).one())
     except exc.SQLAlchemyError as e:
+        db.session.rollback()
         click.echo(f"Not found: {name}", err=True)
 
 @bp.cli.command("set-hardware-status")
@@ -56,4 +100,5 @@ def set_hardware_status(name: str, status: str):
     except exc.SQLAlchemyError as e:
         # some unknown SQLAlchemy error
         current_app.logger.warning(f"Error when updating {name}: {e}")
+        db.session.rollback()
         click.echo(f"An unknown error occurred", err=True)
