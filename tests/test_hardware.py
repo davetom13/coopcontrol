@@ -9,8 +9,9 @@ import pytest
 
 from coopcontrol.models.hardware import Hardware, HardwareStatus
 
+
 class TestAppplication():
-    BLUEPRINT_ROOT="hardware"
+    BLUEPRINT_ROOT = "hardware"
     FIELD_LIST = Hardware().fields()
 
     @pytest.fixture()
@@ -55,12 +56,12 @@ class TestAppplication():
     def test_endpoint_post_hardware_success_create(self, client):
         """Create a new piece of hardware."""
         rv = client.post(f"/{self.BLUEPRINT_ROOT}/NewTestLight", data={
-            "status":HardwareStatus.OPEN.name,
-            "app_id":1,
+            "status": HardwareStatus.OPEN.name,
+            "app_id": 1,
             "bcm_pin_write": 4,
             "bcm_pin_read": 4,
-            "create":"true",
-            })
+            "create": "true",
+        })
         data = rv.get_json()
         assert rv.status_code == 201
         assert self.FIELD_LIST == data["result"].keys()
@@ -70,8 +71,8 @@ class TestAppplication():
     def test_endpoint_post_hardware_success_update(self, client, hardware_test_row):
         """Create a new piece of hardware."""
         rv = client.post(f"/{self.BLUEPRINT_ROOT}/testlight", data={
-            "status":HardwareStatus.CLOSED.name,
-            })
+            "status": HardwareStatus.CLOSED.name,
+        })
         assert rv.status_code == 204
 
     def test_endpoint_post_hardware_create_required(self, client):
@@ -87,7 +88,7 @@ class TestAppplication():
     def test_endpoint_post_hardware_invalid_value(self, client):
         """See an error when invalid status."""
         rv = client.put(f"/{self.BLUEPRINT_ROOT}/testlight_invalid", data={
-            "status":"NOT_A_REAL_STATUS", "create": "true"})
+            "status": "NOT_A_REAL_STATUS", "create": "true"})
         data = rv.get_json()
         assert rv.status_code == 400
         assert data["status"] == "ERROR"
@@ -106,10 +107,10 @@ class TestAppplication():
     def test_endpoint_post_hardware_error_missing_field(self, client):
         """See an error when missing a required field."""
         rv = client.put(f"/{self.BLUEPRINT_ROOT}/testlight_missing", data={
-            "status":HardwareStatus.CLOSED.name,
+            "status": HardwareStatus.CLOSED.name,
             "bcm_pin_read": 12,
-            "create":"true",
-            })
+            "create": "true",
+        })
         data = rv.get_json()
         assert rv.status_code == 400
         assert data["status"] == "ERROR"

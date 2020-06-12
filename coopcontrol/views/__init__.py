@@ -7,6 +7,7 @@ Author: Toni Wells <isometimescode@users.noreply.github.com>
 
 """
 
+
 def format_response(data, status_code=None, error_message=None):
     if data:
         retval = {"result": data}

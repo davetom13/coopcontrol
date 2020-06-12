@@ -9,9 +9,11 @@
 
 """
 
+
 class Error(Exception):
     """Base class for exceptions in this module."""
     pass
+
 
 class APIError(Error):
     """Exception raised for errors during external API requests.

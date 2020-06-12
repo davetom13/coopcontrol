@@ -8,12 +8,12 @@ Author: Toni Wells <isometimescode@users.noreply.github.com>
 
 """
 
-import logging
 import enum
 from dataclasses import dataclass, asdict
 
 from . import TimestampMixin, IntEnum
 from .. import db
+
 
 class HardwareStatus(enum.IntEnum):
     OPEN: int = 1
@@ -24,6 +24,7 @@ class HardwareStatus(enum.IntEnum):
 
     DISABLED: int = 3
     """A piece of hardware is not in use."""
+
 
 @dataclass
 class Hardware(TimestampMixin, db.Model):
@@ -48,7 +49,9 @@ class Hardware(TimestampMixin, db.Model):
     """The BCM pin to use when reading values from the control board."""
 
     status: int = db.Column(
-        IntEnum(HardwareStatus), default=HardwareStatus.DISABLED, nullable=False)
+        IntEnum(HardwareStatus),
+        default=HardwareStatus.DISABLED,
+        nullable=False)
     """The current state of the piece of hardware."""
 
     def fields(self):

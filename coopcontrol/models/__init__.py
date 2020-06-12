@@ -11,6 +11,7 @@ from datetime import datetime
 
 from .. import db
 
+
 class TimestampMixin():
     """Mixin for adding created and updated timestamps to models."""
 
@@ -23,6 +24,7 @@ class TimestampMixin():
         nullable=False,
         default=int(datetime.utcnow().timestamp()),
         onupdate=int(datetime.utcnow().timestamp()))
+
 
 class IntEnum(db.TypeDecorator):
     """Special handling of enums as integers instead of strings."""

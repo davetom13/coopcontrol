@@ -25,6 +25,7 @@ from . import TimestampMixin
 from .. import config, db
 from ..exception import APIError
 
+
 @dataclass
 class Astronomical(TimestampMixin, db.Model):
     """DB model for holding astronomical data."""
@@ -92,22 +93,23 @@ class Astronomical(TimestampMixin, db.Model):
 
         return result
 
+
 class AstroApiHelper():
     """Interact with the sunrise/sunset astronomical data"""
 
-    API_BASE_URL: str="https://api.sunrise-sunset.org/json?%s"
+    API_BASE_URL: str = "https://api.sunrise-sunset.org/json?%s"
     """
         `API Data provided by Sunrise-Sunset
           <https://sunrise-sunset.org/api>`_
     """
 
-    __raw_data: dict=None
+    __raw_data: dict = None
     """The dictionary of data straight from the API"""
 
     def __init__(self):
         self.logger = logging.getLogger(__name__)
 
-    def add_api_data(self, date: str="today") -> int:
+    def add_api_data(self, date: str = "today") -> int:
         """
         Get the astronomical data for a specific date and
         save it to the database.
@@ -164,7 +166,8 @@ class AstroApiHelper():
         self.logger.debug(f"db_data: {db_data}")
 
         # first check if this data exists; not race-condition safe
-        astro = Astronomical.query.filter_by(date=db_data['date'].date()).first()
+        astro = Astronomical.query.filter_by(
+            date=db_data['date'].date()).first()
         if astro:
             self.logger.info(
                 f"Skipping insert for existing record date_utc "
@@ -229,6 +232,7 @@ class AstroApiHelper():
             if "results" not in response or response.get("status") != "OK":
                 self.logger.info(f"API Raw Response {response}")
                 raise APIError(
-                    "Sunrise-Sunset API", "Malformed response, missing results")
+                    "Sunrise-Sunset API",
+                    "Malformed response, missing results")
             self.logger.debug(f"API Raw Response {response}")
             self.__raw_data = response["results"]

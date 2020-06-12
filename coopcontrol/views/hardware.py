@@ -17,12 +17,18 @@ from .. import db
 
 bp = Blueprint("hardware", __name__, url_prefix="/hardware")
 
-@bp.route("/<name>", methods=["GET", "PUT", "POST"])
+
+@bp.route("/<name>", methods=["GET"])
 def get_hardware(name: str):
-    """Get, update or create hardware by name."""
+    """Get hardware by name."""
     result = Hardware().query.filter(Hardware.name.ilike(name)).first()
-    if request.method == "GET":
-        return format_response(result)
+    return format_response(result)
+
+
+@bp.route("/<name>", methods=["PUT", "POST"])
+def put_hardware(name: str):
+    """Update or create hardware by name."""
+    result = Hardware().query.filter(Hardware.name.ilike(name)).first()
 
     if not result and request.form.get("create") != "true":
         return format_response(
@@ -70,9 +76,10 @@ def get_hardware_status(name: str):
     try:
         click.echo(
             Hardware.query.filter(Hardware.name.ilike(name)).one())
-    except exc.SQLAlchemyError as e:
+    except exc.SQLAlchemyError:
         db.session.rollback()
         click.echo(f"Not found: {name}", err=True)
+
 
 @bp.cli.command("set-hardware-status")
 @click.option("--name", required=True, help="A name for the hardware.")
@@ -101,4 +108,4 @@ def set_hardware_status(name: str, status: str):
         # some unknown SQLAlchemy error
         current_app.logger.warning(f"Error when updating {name}: {e}")
         db.session.rollback()
-        click.echo(f"An unknown error occurred", err=True)
+        click.echo("An unknown error occurred", err=True)

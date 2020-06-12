@@ -7,13 +7,14 @@ Author: Toni Wells <isometimescode@users.noreply.github.com>
 
 """
 
-from flask import Flask, current_app
+from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 
 from .configuration import config
 
 db = SQLAlchemy()
 """Global DB instance."""
+
 
 def create_app():
     """Flask factory method.
@@ -36,8 +37,8 @@ def create_app():
 
     # import all the blueprints we need
     from .views import astronomical, application, hardware
-    app.register_blueprint(views.astronomical.bp)
-    app.register_blueprint(views.application.bp)
-    app.register_blueprint(views.hardware.bp)
+    app.register_blueprint(astronomical.bp)
+    app.register_blueprint(application.bp)
+    app.register_blueprint(hardware.bp)
 
     return app

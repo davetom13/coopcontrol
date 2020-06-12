@@ -17,6 +17,7 @@ from .. import db
 
 bp = Blueprint("application", __name__, url_prefix="/application")
 
+
 @bp.route("/<name>", methods=["GET", "PUT", "POST"])
 def get_app(name: str):
     """Get application by name."""
@@ -32,7 +33,7 @@ def get_app(name: str):
         result.status = AppStatus[request.form["status"]]
         db.session.add(result)
         db.session.commit()
-    except KeyError as e:
+    except KeyError:
         # if the AppStatus provided is invalid
         return format_response(None, 400, "Invalid AppStatus provided")
     except exc.SQLAlchemyError as e:
@@ -43,6 +44,7 @@ def get_app(name: str):
     # otherwise all is well
     return format_response(None, 204)
 
+
 @bp.cli.command("get-app-status")
 @click.option("--name", required=True, help="A name to check.")
 def get_app_status(name: str):
@@ -51,14 +53,19 @@ def get_app_status(name: str):
     try:
         click.echo(
             Application.query.filter(Application.name.ilike(name)).one())
-    except exc.SQLAlchemyError as e:
+    except exc.SQLAlchemyError:
         click.echo(f"Not found: {name}", err=True)
+
 
 @bp.cli.command("set-app-status")
 @click.option("--name", required=True, help="A name for the application.")
-@click.option("--status", required=True, type=click.Choice([s.name for s in AppStatus]),
+@click.option(
+    "--status", required=True,
+    type=click.Choice([s.name for s in AppStatus]),
     help="A status for the application.")
-@click.option("--create/--no-create", default=False,
+@click.option(
+    "--create/--no-create",
+    default=False,
     help="Create a new app if a matching name is not found. (default: false)")
 def set_app_status(name: str, status: str, create: bool):
     """Create a new application."""
@@ -70,7 +77,9 @@ def set_app_status(name: str, status: str, create: bool):
     app = Application.query.filter(Application.name.ilike(name)).first()
     if create:
         if app:
-            click.echo(f"{name} already exists, use --no-create to modify it", err=True)
+            click.echo(
+                f"{name} already exists, use --no-create to modify it",
+                err=True)
             return
         else:
             app = Application(name=name)
@@ -86,4 +95,4 @@ def set_app_status(name: str, status: str, create: bool):
     except exc.SQLAlchemyError as e:
         # some unknown SQLAlchemy error
         current_app.logger.warning(f"Error when creating {name}: {e}")
-        click.echo(f"An unknown error occurred", err=True)
+        click.echo("An unknown error occurred", err=True)

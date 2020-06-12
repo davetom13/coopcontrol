@@ -13,6 +13,7 @@ from urllib.error import HTTPError
 
 import coopcontrol.models.astronomical
 
+
 class TestAstroApiHelper():
     # Expected result for a good API request
     JSON_SUCCESS = '''

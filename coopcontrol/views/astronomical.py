@@ -16,18 +16,20 @@ from ..models.astronomical import Astronomical, AstroApiHelper
 
 bp = Blueprint("astronomical", __name__, url_prefix="/astronomical")
 
+
 @bp.route("/<date>")
 def get_date(date: str):
     """Get one day's worth of astronomical data from the database."""
     try:
         check_date = parser.parse(date)
-    except ValueError as e:
+    except ValueError:
         return format_response({}, 400, "Invalid date")
 
     result = Astronomical().query.filter_by(date=check_date.date()).first()
     if result:
         result = result.get_with_local()
     return format_response(result)
+
 
 @bp.cli.command("add-daily")
 @click.option("--date", default="today",
@@ -39,4 +41,5 @@ def add_daily(date: str):
     if db_id:
         click.echo(f"Initialized astronomical data for {date}")
     else:
-        click.echo(f"Error initializing results for {date}, see logs", err=True)
+        click.echo(
+            f"Error initializing results for {date}, see logs", err=True)

@@ -8,12 +8,12 @@ Author: Toni Wells <isometimescode@users.noreply.github.com>
 
 """
 
-import logging
 import enum
 from dataclasses import dataclass
 
 from . import TimestampMixin, IntEnum
 from .. import db
+
 
 class AppStatus(enum.IntEnum):
     ACTIVE: int = 1
@@ -24,6 +24,7 @@ class AppStatus(enum.IntEnum):
 
     ARCHIVED: int = 3
     """An application is permanently unusable or inactive."""
+
 
 @dataclass
 class Application(TimestampMixin, db.Model):

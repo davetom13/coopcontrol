@@ -15,6 +15,7 @@ import logging.config
 
 import yaml
 
+
 class _Config:
     ENV = ""
     """Uses the COOPCONTROL_ENV environment variable"""
@@ -41,6 +42,7 @@ class _Config:
 
     def __getattr__(self, name):
         return self.config[self.ENV][name]
+
 
 config = _Config()
 """Main configuration instance.

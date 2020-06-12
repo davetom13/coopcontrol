@@ -9,8 +9,9 @@ import pytest
 
 from coopcontrol.models.application import Application, AppStatus
 
+
 class TestAppplication():
-    BLUEPRINT_ROOT="application"
+    BLUEPRINT_ROOT = "application"
 
     @pytest.fixture()
     def app_test_row(self, db_session):
@@ -54,13 +55,13 @@ class TestAppplication():
     def test_endpoint_post_app_status_success(self, client):
         """Update an app's status successfully."""
         rv = client.put(f"/{self.BLUEPRINT_ROOT}/mycoolapp", data={
-            "status":AppStatus.LOCKED.name})
+            "status": AppStatus.LOCKED.name})
         assert rv.status_code == 204
 
     def test_endpoint_post_app_status_invalid(self, client):
         """See an error when invalid status update."""
         rv = client.put(f"/{self.BLUEPRINT_ROOT}/mycoolapp", data={
-            "status":"NOT_A_REAL_STATUS"})
+            "status": "NOT_A_REAL_STATUS"})
         data = rv.get_json()
         assert rv.status_code == 400
         assert data["status"] == "ERROR"
