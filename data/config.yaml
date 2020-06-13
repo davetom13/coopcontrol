@@ -47,7 +47,7 @@ production:
     uri: "sqlite:///coopcontrol.db"
 
   flask: &flask
-    secret_key: "SUPERSECRETKEY"
+    secret_key: "{{FLASK_SECRET_KEY}}"
 
 # For running the code in development mode
 development:

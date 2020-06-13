@@ -82,7 +82,7 @@ class Astronomical(TimestampMixin, db.Model):
         }
 
         # convert to the config tz
-        localtz = tz.gettz(config.app["timezone"])
+        localtz = tz.gettz(config.get("app.timezone"))
         newdate = newdate.astimezone(localtz)
         sr = sr.astimezone(localtz)
         ss = ss.astimezone(localtz)
@@ -124,7 +124,7 @@ class AstroApiHelper():
 
         try:
             self.__call_api(
-                config.app["latitude"], config.app["longitude"], date)
+                config.get("app.latitude"), config.get("app.longitude"), date)
             return self.__save_record()
         except HTTPError as e:
             self.logger.error(f"API error: {e.reason}")

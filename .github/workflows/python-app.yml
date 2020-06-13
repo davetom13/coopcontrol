@@ -34,6 +34,7 @@ jobs:
         FLASK_SKIP_DOTENV: 1
         FLASK_APP: coopcontrol
         FLASK_ENV: test
+        FLASK_SECRET_KEY: supersecrettestkey
         COOPCONTROL_ENV: test
       run: |
         pipenv run python -m pytest

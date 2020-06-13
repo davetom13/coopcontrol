@@ -5,6 +5,6 @@
 FLASK_SKIP_DOTENV=1
 
 FLASK_APP=coopcontrol
-
+FLASK_SECRET_KEY="1f6a08a1ae8f4ea7557055f1b7f87........"
 FLASK_ENV=production
 COOPCONTROL_ENV=production

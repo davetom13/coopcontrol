@@ -28,8 +28,8 @@ def create_app():
     """
     app = Flask(__name__)
     app.config.from_mapping(
-        SECRET_KEY=config.flask["secret_key"],
-        SQLALCHEMY_DATABASE_URI=config.database["uri"],
+        SECRET_KEY=config.get("flask.secret_key"),
+        SQLALCHEMY_DATABASE_URI=config.get("database.uri"),
         SQLALCHEMY_TRACK_MODIFICATIONS=False,
     )
 
